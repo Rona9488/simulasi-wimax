@@ -1,0 +1,3 @@
+package root;
+
+@namespace(inet);

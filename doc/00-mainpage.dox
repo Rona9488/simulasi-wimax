@@ -1,0 +1,61 @@
+/**
+ * @mainpage Numbat Developer's Guide
+ *
+ * @section homepage Numbat Homepage
+ * http://klub.com.pl/numbat/
+ *
+ *
+ * @section toc Table Of Contents
+ * - @ref toc
+ * - @ref intro
+ * - @subpage overview
+ * - @subpage install
+ * - @subpage running
+ * - @subpage parameters
+ * - @subpage mailinglist
+ * - @subpage features
+ * - @subpage akaroa
+ * - @subpage ack
+ *
+ * @section intro About this documentation
+ *
+ * Numbat is a WiMAX/Mobile IPv6 simulation environment. See \ref overview section
+ * for more detailed description.
+ *
+ * There are two types of documentation for Numbat available:
+ *
+ * 1. <a href="index.html" target="_parent">Developer's Guide</a> - you are reading its front page. It contains Overview, 
+ * compilation information, running tips, installation and usage, and several other 
+ * chapters. In particular, it also contains detailed C++ documentation of all modules. 
+ * Please use this documentation for everything except description of module 
+ * parameters and module interactions.
+ *
+ * 2. <a href="../neddoc/index.html" target="_parent">NED documentation</a> - It documents defined models: module names, parameters, gates, 
+ * networks, module relationships etc. This documentation is generated with neddoc. You
+ * are currently reading front page of this documentation. Please this documentation
+ * to obtain info about module.
+ *
+ * Welcome to the Numbat Developer's Guide.  This document describes various aspects 
+ * of the compilation and installation of Numbat simulation software,
+ * detailed description of the internal architecture, common coding practice
+ * and many more. People with programming background can find useful
+ * informations here. Main purpose of this document is to help
+ * contributors to quickly know Dibbler from the inside.
+ * 
+ * This document is intended just as its title states -- a guide. It is
+ * not a thorough code description. Numbat code is under development since 
+ * 2005, but unfortunately providing clear documentation was never priority.
+ * As of 2010, its main developer Tomek Mrugalski is no longer actively
+ * involved in development, so he became part-time maintainer. Tomek does
+ * not intend to develop or fix anything on its own. Patches are more
+ * than welcome, though.
+ *
+ * To regenerate this documentation, please load Numbat project into OMNeT++ IDE and
+ * click "Generate NED documentation..." from Project menu. Documentation will be stored
+ * in doc/doxy and doc/neddoc directories.
+ *
+ * Reports:
+ *
+ * Doxygen: <a href="doxygen.log">[generation log]</a> <a href="doxygen-error.log">[errors and warnings]</a> <br/>
+ *
+ */

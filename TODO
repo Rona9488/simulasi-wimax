@@ -1,0 +1,66 @@
+
+
+ This file contains list of tasks, which must be done.
+
+ TODO
+------
+- Ustalic, ile symboli jest w ramce .16 (na razie jest wbite na pałe 300)
+- Doc: common sim mistakes:
+   - opisac, jak w kolejkach MACoskich zbiera sie coraz wiecej messydży,
+     bo generowany ruch jest większy niż skonfigurowane pasmo
+- wyjaśnić, czemu na koniec symulacji jest coś takiego:
+  Dropped frames (invalid CID): 65090
+- check average radvd msg size
+ 
+- ipv6/Internet.cc::calculateDelay()
+  add different delays in routing for close (bs-bs) or
+  remote (ss-cn) packets
+- diagram3 has cosmic values in runs 3, 5-10
+
+ SCENARIOS
+-----------
+Run 1: No optimization
+Run 2: WiMAX optim
+Run 3: Skip initial DHCPv6 delay
+Run 4: DHCPv6 Preference 255
+Run 5: DHCPv6 Rapid commit
+Run 6: IPv6 Skip DAD
+Run 7: IPv6 Server side DAD
+Run 8: Remote autoconf
+Run 9: Address params
+Run A: Remote Mobile IPv6
+
+ BUGS
+------
+Lots of them.
+
+ VECTORS IMPLEMENTED
+---------------------
+SS/IPv6Disp:
+- SentBytes per second
+- RcvdBytes per second
+- DroppedMsgs
+
+DD/DHCPv6Cli:
+- conf. complete (number of completed configurations)
+- conf. time
+
+IPv6Node:
+- sent bytes
+- sent packets
+- received bytes
+- received packets
+
+Internet
+- Transmitted msgs
+- Average delay
+- Dropped messages
+
+
+ VECTORS TO BE IMPLEMENTED
+---------------------------
+- measure time since last received data
+- measure time since last transmitted data
+- measure number of dropped packets due to: 
+  - no routing configured
+  - no address configured

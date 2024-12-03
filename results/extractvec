@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# this script extracts exactly one vector from bunch of common vectors
+# e.g. extract vector 5 from simulation runs 
+
+# usage: extactvecs number [dstdir]
+
+if [ "$#" == "0" ]
+then
+ echo "USAGE: extactvec number [dstdir]"
+ exit
+fi
+
+# Vector number
+V=$1
+
+# Destination directory
+if [ "$#" == "2" ]
+then 
+  DIR=$2
+else
+  DIR=.
+fi
+
+echo "DSTDIR=$DIR"
+mkdir -p $DIR
+
+for i in *.vec; do
+echo "Extracting vector $V from file $i"
+echo splitvecth $i $V
+splitvecth $i $V
+mv -f *$V.vec $DIR
+done
+
+
+cd $DIR
+for i in *.vec; do
+# perform those operations on output vector
+
+# skip first 500 lines
+processvec -s500 $i
+
+# average remaining lines (1 avg per 10 lines)
+processvec -a10 $i.new
+
+done
+
+
+cd ..
+
+
+
+#mv *$V.vec $DIR
+ 

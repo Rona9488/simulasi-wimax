@@ -1,0 +1,116 @@
+/**
+ * @page install Installation and usage
+
+Numbat can be used in Windows and Linux systems. Ways of installation
+are different. As Numbat is not a end user software, but rather
+research environment, you need to gain a bit of expertise to use
+it. Do not expect to have download and ready to use product anytime
+soon.
+
+Numbat is currently known to work with OMNeT++ 4.1 under Linux and Windows.
+Older and newer versions may work as well. Other operating systems were
+not checked. Numbat will definitely not work with OMNeT++ earlier than 4.0.
+
+ @section omnet-compile OMNeT++ compilation
+
+To compile and run Numbat you will need properly installed OMNeT++
+(tested with version 4.0 and 4.1). OMNeT++ packages and installation notes are
+available on the OMNeT community website: http://omnetpp.org.
+
+Just in case, the installation of OMNeT++ looks as follows:
+\verbatim
+tar zxvf omnetpp-4.2.2-src.tgz
+cd omnetpp-4.2.2
+. setenv
+export TCL_LIBRARY=/usr/share/tcltk/tcl8.5
+export PATH=/home/aniela/devel/omnetpp-4.2.2/bin:$PATH
+export LD_LIBRARY_PATH=/home/aniela/devel/omnetpp-4.2.2/lib
+./configure
+make
+\endverbatim
+
+
+If you have the following error occurred during Numbat simulation start up, please make sure you have libxml2-dev installed:
+
+\verbatim
+<!> Error in module (RoutingTable6) physim.BS[0].routingTable6 (id=16) during network setup: Error reading `empty.xml': Parse error: failed to load external entity "empty.xml"
+at line (null):0.
+\endverbatim
+
+Make sure that you compile OMNeT and set your variable correctly before
+attempting Numbat compilation.
+
+You may also need to install some additional packages:
+\verbatim
+sudo apt-get install libx11-dev tcl-dev tk-dev
+\endverbatim
+
+  @section linux-cmd Linux command-line compilation
+
+After your OMNeT installation is successful (see section @ref omnet-compile), you 
+need to obtain Numbat sources. Go to project homepage located at 
+http://klub.com.pl/numbat/. It will point you to github repository:
+
+\verbatim
+git@github.com:tomaszmrugalski/numbat.git
+\endverbatim
+
+Your exact compilation may look a bit different, but in general it should look
+somewhat similar to this:
+
+\verbatim
+git clone git://git@github.com:tomaszmrugalski/numbat.git 
+cd numbat
+./rebuild-makefiles
+make
+\endverbatim
+
+  @section linux-gui GUI (IDE) compilation
+
+Numbat recently was compiled under GUI. Choose this approach if you
+like IDE available in OMNeT++. To use it, you need OMNeT++. See
+section @ref omnet-compile for details.
+
+To compile Numbat in GUI environment, you need to download Numbat sources from GIT first. 
+Depending on which GIT client you are using, your download may look slightly different,
+but it should look similar to this:
+
+\verbatim
+git clone git@github.com:tomaszmrugalski/numbat.git numbat
+omnetpp
+\endverbatim
+
+OMNeT++ IDE will start. It may ask you about your workspace directory. Please use whatever
+directory you want. You should see a page with Project Explorer tab on your left.
+
+\image html ide-import1.png "Numbat import, step 1"
+
+Please right click on it and select Import...
+
+\image html ide-import2.png "Numbat import, step 2"
+
+From new menu choose Existing Projects into Workspace and click Next.
+
+\image html ide-import3.png "Numbat import, step 3"
+
+Use Browse.. button to select root directory. Make sure you point out to a directory where 
+Numbat sources are stored. After that step is complete, you should be able to click Finish button.
+
+\image html ide-import4.png "Imported Numbat project."
+
+Now you have Numbat project imported into your OMNeT++ workspace. Now let's compile it!
+Select Project->Build All. Numbat compilation takes some time. After it is hopefully finished,
+you can start your simulation. To do that, you need to click green play button (or use Run menu).
+
+
+@section windows Windows compilation
+Note: Windows compilation has been greatly simplified since migration
+to Omnet-4.0. Currently it is quite straightforward process.
+
+\li Run omnet shell (double click on mingwenc.cmd from Omnetpp-4.0 directory)
+\li Change directory to numbat (cd path/to/numbat)
+\li Rebuild makefiles (use command: rebuild-makefiles)
+\li Build Numbat (make)
+\li Run Numbat (./omnet)
+
+ */

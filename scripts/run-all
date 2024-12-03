@@ -1,0 +1,40 @@
+#!/bin/bash
+
+OUTDIR=../results-7ss-67s
+SIMDIR=../wimax
+SIMTIME=67s
+
+
+SIMTIME_REGEXP='s/^sim-time-limit.*$/sim-time-limit = '${SIMTIME}'/g'
+#echo 's/^sim-time-limit.*$/sim-time-limit = 3s/g';
+#echo ${SIMTIME_REGEXP}
+
+echo "SIMDIR=${SIMDIR} OUTDIR=${OUTDIR} SIMTIME=${SIMTIME}"
+
+mkdir -p ${OUTDIR}
+rm -f ${OUTDIR}/*.vec ${OUTDIR}/*.log ${OUTDIR}/*.ini
+cd ${SIMDIR}
+perl -pi -e "${SIMTIME_REGEXP}" omnetpp.ini
+
+function simRun
+{
+    echo -n "Running sim $1: ";
+    date
+    /usr/bin/time -v -o ${OUTDIR}/$1-time.log ./wimax -r $1 > ${OUTDIR}/$1.log
+
+    cp -f ${SIMDIR}/omnetpp.ini ${OUTDIR}/$1-omnetpp.ini
+    mv -f ${SIMDIR}/run$1.vec ${OUTDIR}/$1-run.vec
+    return;
+}
+
+
+simRun 1
+simRun 2
+simRun 3
+simRun 4
+simRun 5
+simRun 6
+simRun 7
+simRun 8
+simRun 9
+simRun 10

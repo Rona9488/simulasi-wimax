@@ -1,0 +1,334 @@
+/**
+ * @file   wmaxmac.h
+ * @author Tomasz Mrugalski <thomson@klub.com.pl>
+ * @date   2006-12-29 01:50:38+0100
+ * 
+ * @brief  WMax MAC control layer
+ * @licence GNU GPLv2
+ * 
+ */
+
+#include <omnetpp.h>
+#include <vector>
+#include "wmaxmsg_m.h"
+#include "C:\Users\ronaa\Downloads\numbat-master (2)\numbat-master\numbat-master\util\fsm.h"
+#include "C:\Users\ronaa\Downloads\numbat-master (2)\numbat-master\numbat-master\util\hoinfo.h"
+#include "C:\Users\ronaa\Downloads\numbat-master (2)\numbat-master\numbat-master\util\ssinfo.h"
+#include "C:\Users\ronaa\Downloads\numbat-master (2)\numbat-master\numbat-master\xMIPv6\src\networklayer\xmipv6\xMIPv6.h"     // Adam
+#include "C:\Users\ronaa\Downloads\numbat-master (2)\numbat-master\numbat-master\xMIPv6\src\networklayer\common\InterfaceTable.h"  // Adam
+#include "C:\Users\ronaa\Downloads\numbat-master (2)\numbat-master\numbat-master\xMIPv6\src\networklayer\icmpv6\IPv6NeighbourDiscoveryAccess.h"
+// #include "ipv6.h"		//Adam
+// #include "IPv6Address.h"//Adam
+// #include "InterfaceTableAccess.h" // Adam
+
+
+using namespace std;
+
+#ifndef WMAXCTRL_H
+#define WMAXCTRL_H
+
+/**************************************************************/
+/*** WIMAX CONSTANTS ******************************************/
+/**************************************************************/
+
+/**************************************************************/
+/*** STRUCTURES ***********************************************/
+/**************************************************************/
+
+typedef struct {
+    int TransactionID;
+    uint16_t cid;
+    WMaxQos qos;
+} Transaction;
+
+
+/**************************************************************/
+/*** MODULE DEFINITIONS STRUCTURES ****************************/
+/**************************************************************/
+
+class WMaxFlowSS;
+
+
+class WMaxCtrlSS : public Fsm
+{
+    typedef enum {
+	WMAX_CTRL_NETWORK_ENTRY_INITIAL,
+	WMAX_CTRL_NETWORK_REENTRY,
+	WMAX_CTRL_NERWORK_SCAN
+    } WMaxCtrlNetworkEntryType;
+
+public:
+    WMaxCtrlSS();
+    cModule *SS;
+    xMIPv6 *xmipv6;//============= Adam 14-09-2011 =====================
+    inet::simtime_t InactivityL3StartTime;//============= Adam 14-09-2011 =====================
+    void HandoverAck(inet::cMessage *msg);
+    void initialize();
+    void finish();
+    void handleMessage(inet::cMessage *msg);
+    list<WMaxFlowSS*> serviceFlows;
+    InterfaceTable* ift2;   // Adam   
+    IPv6NeighbourDiscovery* IPv6ND; // Adam
+    inet::simtime_t L3Ready;//============= Adam 14-09-2011 =====================
+    inet::cOutVector InactivityL3Duration;//============= Adam 14-09-2011 =====================
+    
+    int Handover; // Adam
+    // -- handover related info --
+    HoInfo_t * hoInfo;
+    WMaxCtrlNetworkEntryType neType;
+
+    // --- STATES ---
+    typedef enum {
+	// 1. network entry phase
+	STATE_WAIT_FOR_DLMAP,             // wait for DL-MAP
+	STATE_WAIT_FOR_UCD,               // wait for UCD
+	STATE_SEND_RNG_REQ,               // send RNG-REQ
+	STATE_WAIT_RNG_RSP,               // wait for RNG-RSP
+	STATE_SEND_SBC_REQ,               // send SBC-REQ
+	STATE_WAIT_SBC_RSP,               // wait for SBC-RSP
+	STATE_WAIT_SA_TEK_CHALLANGE,      // wait for PKM-RSP (SA-TEK-Challange)
+	STATE_SEND_SA_TEK_REQ,            // send PKM-REQ (SA-TEK-Request)
+	STATE_WAIT_SA_TEK_RSP,            // wait for PKM-RSP (SA-TEK-Response)
+	STATE_SEND_REG_REQ,               // send REG-REQ
+	STATE_WAIT_REG_RSP,               // wait for REG-RSP
+
+	// 2. service flow creation phase
+	STATE_SVC_FLOW_CREATION,             // initialize service flow creation (i.e. start new FSMs for each flow)
+
+	STATE_OPERATIONAL,                // network entry completed, service flows created, normal operation
+
+	/// @todo - implement neighbor advertisements support
+
+        // 3. scanning
+        STATE_SEND_MOB_SCN_REQ,
+        STATE_WAIT_MOB_SCN_RSP,
+	/// @todo - implement scanning
+
+	// handover
+    
+    STATE_WAIT_HANDOVER_ACK,//============= Adam 14-09-2011 =====================
+    
+	STATE_SEND_MSHO_REQ,              // send MSHO-REQ
+	STATE_WAIT_BSHO_RSP,              // wait for BSHO-RSP
+	STATE_SEND_HO_IND,                // send HO-IND
+	STATE_HANDOVER_COMPLETE,          // handover complete
+
+	// extra state between WAIT_BSHO_RSP and SEND_HO_IND
+	STATE_WAIT_L3_DETACH_READY, // wait for Layer3 become ready to detach
+	
+	// network reentry
+	STATE_WAIT_FOR_CDMA,              // wait for CDMA opportunity
+	STATE_SEND_CDMA,                  // send CDMA code
+	STATE_WAIT_ANON_RNG_RSP,          // wait for anonymous RNG-RSP
+
+	STATE_POWER_DOWN,
+	STATE_NUM
+    } State;
+
+    // --- EVENTS ---
+    typedef enum {
+	EVENT_HANDOVER_START,
+	EVENT_REENTRY_START,
+	EVENT_ENTRY_START,
+	EVENT_DLMAP,
+	EVENT_UCD,
+	EVENT_CDMA_CODE,
+	EVENT_MOB_SCN_RSP_RECEIVED,
+    EVENT_HANDOVER_ACK_RECEIVED,//============= Adam 14-09-2011 =====================s
+	EVENT_BSHO_RSP_RECEIVED,
+	EVENT_HO_CDMA_CODE,
+	EVENT_RNG_RSP_RECEIVED,
+	EVENT_SBC_RSP_RECEIVED,
+	EVENT_SA_TEK_CHALLENGE,
+	EVENT_SA_TEK_RSP,
+	EVENT_REG_RSP_RECEIVED,
+	EVENT_SERVICE_FLOW_COMPLETE, // service flow created
+	EVENT_L3_DETACH_READY, // L3 is ready to detach
+	EVENT_HO_IND_SENT,
+	EVENT_NUM
+    } Event;
+
+    //MiM: double changes to simtime_t
+    //double hoStartTimestamp;   // timestamp of handover start
+    //double hoReentryTimestamp; // timestamp of the reentry start
+    //double hoReentryCompleteTimestamp; // timestamp of the reentry completion
+    //double hoActionTime; //time of handover idle
+    inet::simtime_t hoStartTimestamp;   // timestamp of handover start
+    inet::simtime_t hoReentryTimestamp; // timestamp of the reentry start
+    inet::simtime_t hoReentryCompleteTimestamp; // timestamp of the reentry completion
+    inet::simtime_t hoActionTime; //time of handover idle
+    inet::simtime_t sendMsg(inet::cMessage * msg, std::string paramName, const std::string &gateName, int cid, double extraDelay = 0.0f);
+    inet::cStdDev hoActionTimeData;
+protected:
+    void fsmInit();
+  
+  
+    void connectNextBS();
+    void connectBS(int x); // connect (i.e. make Omnet connections) to BS[x]
+    void disconnect();
+    // wait for DL-MAP state
+    static FsmStateType onEventState_WaitForDlmap(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+
+    // wait for UCD state
+    static FsmStateType onEventState_WaitforUcd(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+
+    // send CDMA code state
+    static FsmStateType onEnterState_WaitAnonRngRsp(Fsm * fsm);
+    static FsmStateType onExitState_WaitAnonRngRsp(Fsm * fsm);
+
+    // send RNG-REQ state
+    static FsmStateType onEnterState_SendRngReq(Fsm * fsm);
+
+    // wait for RNG-RSP state
+    static FsmStateType onEventState_WaitForRngRsp(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+    
+    // send SBC-REQ state
+    static FsmStateType onEnterState_SendSbcReq(Fsm * fsm);
+
+    // wait for SBC-RSP state
+    static FsmStateType onEventState_WaitForSbcRsp(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+
+    // wait for SA-TEK-CHALLANGE
+    static FsmStateType onEventState_WaitForSaTekChallange(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+
+    // send SA-TEK-REQ
+    static FsmStateType onEnterState_SendSaTekReq(Fsm * fsm);
+
+    // wait for SA-TEK-RSP
+    static FsmStateType onEventState_WaitForSaTekRsp(Fsm *fsm, FsmEventType e, inet::cMessage *msg);
+
+    // send REG-REQ state
+    static FsmStateType onEnterState_SendRegReq(Fsm * fsm);
+
+    // wait for REG-RSP state
+    static FsmStateType onEventState_WaitForRegRsp(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+
+    // initiate service flow creation state
+    static FsmStateType onEnterState_SvcFlowCreation(Fsm * fsm);
+    static FsmStateType onEventState_SvcFlowCreation(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+
+    // operational state
+    static FsmStateType onEnterState_Operational(Fsm * fsm);
+    static FsmStateType onEventState_Operational(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+
+    // send MOB_SCN-REQ
+    static FsmStateType onEnterState_SendMobScnReq(Fsm *fsm);
+
+    // wait for MOB_SCN-RSP
+    static FsmStateType onEventState_WaitForMobScnRsp(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+
+    // wait for HANDOVER_ACK
+    static FsmStateType onEventState_WaitForHandoverAck(Fsm * fsm, FsmEventType e, inet::cMessage *msg);//============= Adam 14-09-2011 =====================
+    // send MSHO-REQ state
+    static FsmStateType onEnterState_SendMshoReq(Fsm *fsm);
+
+    // wait for BSHO-RSP state
+    static FsmStateType onEventState_WaitForBshoRsp(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+
+    // wait for L3 detach readiness
+    static FsmStateType onEventState_WaitForL3Detach(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+
+    // sent HO-IND state
+    static FsmStateType onEventState_SendHoInd(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+    static FsmStateType onEnterState_SendHoInd(Fsm *fsm);
+    static FsmStateType onExitState_SendHoInd(Fsm * fsm);
+    
+    // handover complete state
+    static FsmStateType onEnterState_HandoverComplete(Fsm * fsm);
+
+    // wait for CDMA opportunity state
+    static FsmStateType onEventState_WaitForCdma(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+
+    static FsmStateType onEnterState_SendCdma(Fsm *fsm);
+
+    // wait for anonymous RNG-RSP state
+    static FsmStateType onEventState_WaitForAnonRngRsp(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+    
+    static FsmStateType onEventState_PowerDown(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+
+    FsmStateType onEvent_CdmaCode(inet::cMessage *msg);
+    // --- TIMERS ---
+    TIMER_DEF(Handover);
+    TIMER_DEF(NetworkEntry);
+    TIMER_DEF(Reentry);
+
+private:
+    int sfCnt; // number of service flows
+    void mihNotify(MihInfo_t notifyType, int data = 0);
+
+    WMaxEvent_FlowCreationStart * createNewFlowEvent();
+};
+
+class WMaxCtrlBS : public Fsm
+{
+public:
+    WMaxCtrlBS();
+    cModule *BS;
+private:
+    list<Transaction> Transactions;
+    list<SSInfo_t> ssList;
+    uint16_t cid;
+    int pkmSupport;
+    bool pkmEnabled();
+protected:
+    void fsmInit();
+    virtual void initialize();
+    virtual void handleMessage(inet::cMessage *msg);
+    double sendMsg(inet::cMessage * msg, const char * paramName, const char * gateName, int cid);
+    uint16_t getNextCid() { return cid++; };
+    SSInfo_t * getSS(uint16_t basicCid, string reason);
+    void deleteSS(uint16_t basicCid);
+};
+
+class WMaxFlowSS : public Fsm
+{
+public:
+    WMaxFlowSS(Fsm * fsm);
+    WMaxFlowSS();//MiM
+    void setParentFsm(Fsm *parent);//MiM
+    uint16_t cid;
+    int gate;
+    int transactionID;
+    WMaxQos qos;
+    void handleMessage(inet::cMessage *msg);
+    Fsm *parentFsm;
+
+    ~WMaxFlowSS();
+protected:
+    void fsmInit();
+
+    typedef enum {
+        STATE_START,
+        STATE_SEND_DSA_REQ,
+        STATE_WAITING_DSX_RVD,
+        STATE_WAITING_DSA_RSP,
+        STATE_SEND_DSA_ACK,
+        STATE_OPERATIONAL,
+        STATE_DISABLED, 
+        STATE_NUM
+    } State;
+
+    static FsmStateType onEventState_Start(Fsm * fsm, FsmEventType e, inet::cMessage * msg);
+    static FsmStateType onEnterState_SendDsaReq(Fsm * fsm);
+    static FsmStateType onEventState_WaitingDsxRvd(Fsm * fsm, FsmEventType e, inet::cMessage * msg);
+    static FsmStateType onEventState_WaitingDsaRsp(Fsm * fsm, FsmEventType e, inet::cMessage * msg);
+    static FsmStateType onEnterState_SendDsaAck(Fsm * fsm);
+    static FsmStateType onEventState_Operational(Fsm * fsm, FsmEventType e, inet::cMessage * msg);
+    static FsmStateType onEventState_Disabled(Fsm * fsm, FsmEventType e, inet::cMessage *msg);
+
+    typedef enum {
+        EVENT_START,
+        EVENT_DSX_RVD_RECEIVED,
+        EVENT_DSA_RSP_RECEIVED,
+        EVENT_FLOW_DISABLE,
+        EVENT_FLOW_ENABLE,
+        EVENT_NUM
+    } Event;
+
+};
+
+ostream & operator <<(ostream & s, Transaction &trans);
+ostream & operator <<(ostream & s, WMaxFlowSS &f);
+
+/// @todo class WMaxFlowBS
+#endif
